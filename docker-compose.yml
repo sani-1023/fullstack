@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  mssqldb:
+    image: mcr.microsoft.com/mssql/server:latest
+    restart: always
+    env_file:
+      - .env
+    environment:
+      SA_PASSWORD: a1234A!@#
+      ACCEPT_EULA: Y
+    volumes:
+        - sqldata:/var/opt/mssql
+    networks:
+      - my-network
+
+  spring-app:
+    image: sani1023/sqlproject.jar:latest
+    build:
+      context: /home/sani/spring_mssql_project/fullstack/sqlproject
+      dockerfile: /home/sani/spring_mssql_project/fullstack/sqlproject/Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - my-network
+      - nginx-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:sqlserver://mssqldb:1433;encrypt=false;databaseName=mssql2
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: a1234A!@#
+
+  frontend:
+    image: sani1023/docker-frontend:latest
+    build:
+      context: /home/sani/WebstormProjects/docker-frontend
+      dockerfile: /home/sani/WebstormProjects/docker-frontend/Dockerfile
+    networks:
+        - my-network
+        - nginx-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - nginx-network
+
+networks:
+  my-network:
+  nginx-network:
+
+volumes:
+  sqldata:

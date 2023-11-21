@@ -1,0 +1,7 @@
+POST http://192.168.112.3:8080/api/tutorials
+Content-Type: application/json
+
+{
+  "title": "gateway",
+  "description": "hello"
+}

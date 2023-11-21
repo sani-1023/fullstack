@@ -1,0 +1,55 @@
+---
+  - name: Build and Push Docker Images for React and Spring Boot
+    hosts: buildservers
+    become: true
+    gather_facts: false
+
+    vars:
+      docker_hub_username: "sani1023"
+      react_app_path: "/home/sani/WebstormProjects/docker-frontend"
+      spring_boot_app_path: "/home/sani/spring_mssql_project/fullstack/sqlproject"
+      react_image_name: "{{ docker_hub_username }}/docker-frontend"
+      spring_boot_image_name: "{{ docker_hub_username }}/sqlproject.jar"
+      docker_compose_file_path: "/home/sani/spring_mssql_project/fullstack/docker-compose.yml"
+
+    tasks:
+      - name: Build React Docker image
+        command: "docker-compose -f {{ docker_compose_file_path }} up --build --no-start frontend"
+        become: false
+
+      - name: Push React Docker image to Docker Hub
+        command: "docker push {{ react_image_name }}"
+        become: false
+
+      - name: Pull React Docker image from Docker Hub
+        command: "docker pull {{ react_image_name }}"
+        become: false
+
+      - name: Build Spring Boot application
+        command: "/opt/maven/bin/mvn clean package"
+        args:
+          chdir: "{{ spring_boot_app_path }}"
+        become: false
+
+      - name: Build Spring Boot Docker image
+        command: "docker-compose -f {{ docker_compose_file_path }} up --build --no-start spring-app"
+        become: false
+
+      - name: Push Spring Boot Docker image to Docker Hub
+        command: "docker push {{ spring_boot_image_name }}"
+        become: false
+
+      - name: Pull Spring Boot Docker image from Docker Hub
+        command: "docker pull {{ spring_boot_image_name }}"
+        become: false
+
+
+  - name: pull and run from docker hub to run sqlproject
+    hosts: deployservers
+    become: true
+    gather_facts: false
+
+
+    tasks:
+      - name: Run Docker Compose
+        command: docker-compose -f /home/sani/spring_mssql_project/fullstack/docker-compose.yml up -d

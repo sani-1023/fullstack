@@ -1,0 +1,13 @@
+- name: pull and run from docker hub to run sqlproject
+  hosts: deployservers
+  become: true
+  gather_facts: false
+
+
+  tasks:
+    - name: Run Docker Compose
+      command: docker-compose -f /home/sani/spring_mssql_project/fullstack/docker-compose.yml up -d
+
+
+
+
